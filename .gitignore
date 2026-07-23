@@ -32,9 +32,17 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
+
+# interactive-mode per-session state (lives at each session clone root)
+.session.json
+
+# local-only Claude settings/hooks (must NOT reach session clones)
+.claude/settings.local.json
+.claude/hooks/
 
 # typescript
 *.tsbuildinfo

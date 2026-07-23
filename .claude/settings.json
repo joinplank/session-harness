@@ -1,0 +1,28 @@
+{
+  "$comment": "Committed permission allowlist for the interactive-session flow in this repo. No hooks here on purpose: session clones commit deliberately; any auto-commit-on-stop hook lives in the gitignored settings.local.json.",
+  "permissions": {
+    "allow": [
+      "Bash(scripts/session.sh:*)",
+      "Bash(scripts/plan-critique.sh:*)",
+      "Bash(scripts/concept-check.sh:*)",
+      "Bash(./scripts/session.sh:*)",
+      "Bash(./scripts/plan-critique.sh:*)",
+      "Bash(./scripts/concept-check.sh:*)",
+      "Bash(.claude/skills/adversarial-review/run-review.sh:*)",
+      "Bash(./.claude/skills/adversarial-review/run-review.sh:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh label list:*)",
+      "Bash(git clone:*)",
+      "Bash(git fetch:*)",
+      "Bash(git branch:*)",
+      "Bash(git checkout:*)",
+      "Bash(jq:*)",
+      "Bash(cmux new-workspace:*)",
+      "Bash(cmux workspace list:*)",
+      "Bash(cmux workspace close:*)"
+    ]
+  }
+}
