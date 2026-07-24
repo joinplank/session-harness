@@ -18,11 +18,11 @@ export const metadata: Metadata = {
     "Hello-world Next.js app wired up with the Plank interactive coding harness",
 };
 
-// Runs before the page paints (first element the parser executes), so the
-// first paint already has the right theme: the stored choice wins; with no
-// stored choice the OS preference applies and stays live-followed — the
-// listener re-checks storage on every OS change, so it neutralizes itself
-// once the user pins a theme.
+// Runs render-blockingly in <head> — before <body> exists, so even a streamed
+// or stalled response can never paint with the wrong theme: the stored choice
+// wins; with no stored choice the OS preference applies and stays
+// live-followed — the listener re-checks storage on every OS change, so it
+// neutralizes itself once the user pins a theme.
 const themeInit = `(function () {
   var root = document.documentElement;
   var media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -50,10 +50,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
-        {children}
-      </body>
+      </head>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
