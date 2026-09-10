@@ -101,18 +101,14 @@ gates nothing and takes no round, and its question is written to disk before the
 probe that fails is recorded on the PR as **unanswered** rather than vanishing.
 
 **An optional DeepSeek third opinion** (`run-review.sh --reviewer deepseek`, through `opencode`)
-is available when an engineer wants a fresh model over the same diff — useful where the gating
-reviewer and the author share a blind spot. It is **advisory, never a gate**, which follows from
-being optional: a pass that is sometimes skipped is one nothing that merges can depend on. It
-runs on request only, takes no round, and does not gate the merge; its findings are dispositioned
-like the concept pass's — applied, or declined with a one-line rationale — and recorded on the PR.
+gives a fresh model over the same diff, for where the gating reviewer and the author share a blind
+spot. It is **advisory, never a gate**: on request only, no round, no merge gate. Disposition its
+findings like the concept pass's and record them on the PR.
 
-**Every unattended model call in the flow is supervised** — `model-call.sh`, sourced by
-`plan-critique.sh`, `concept-check.sh` and `run-review.sh`. An unsupervised call has two failure
-modes that both end as a round which silently did not happen: it hangs forever, or it dies
-mid-stream having produced nothing. `model_call` bounds every call, discards a failed attempt's
-output rather than publishing it, and retries only where a **mechanical read-only sandbox flag**
-makes a second run cost no more than the first — a review-shaped prompt is not a write boundary.
+**Every unattended model call is supervised** — `model-call.sh`, sourced by `plan-critique.sh`,
+`concept-check.sh` and `run-review.sh`. Unsupervised, a call that hangs or dies mid-stream both end
+as a round that silently did not happen. `model_call` bounds every call, publishes only a
+successful attempt's output, and retries only behind a **mechanical read-only sandbox flag**.
 
 ## Concept-minimalism pass (in `/iship`, once)
 

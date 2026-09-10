@@ -20,9 +20,10 @@ RUN_REVIEW="$(cd "$(dirname "$RUN_REVIEW")" && pwd)/$(basename "$RUN_REVIEW")"
 W="$(mktemp -d)"
 trap 'rm -rf "$W"' EXIT HUP INT TERM
 FAILED=0
+PASSED=0
 
 ok() { # ok <condition-result> <label>
-  if [ "$1" = 0 ]; then echo "  ok  $2"; else echo "  FAIL  $2" >&2; FAILED=1; fi
+  if [ "$1" = 0 ]; then PASSED=$((PASSED + 1)); echo "  ok  $2"; else echo "  FAIL  $2" >&2; FAILED=1; fi
 }
 
 # A repo with a real origin and a real branch diff. Everything below runs inside it, because
@@ -158,7 +159,7 @@ grep -q 'VERDICT' "$W/silent.out"
 [ "$?" != 0 ]; ok $? "and prints no VERDICT line for the caller to branch on"
 
 if [ "$FAILED" = 0 ]; then
-  echo "run-review.test: OK"
+  echo "run-review.test: OK ($PASSED assertions)"
   exit 0
 fi
 echo "run-review.test: FAILED" >&2

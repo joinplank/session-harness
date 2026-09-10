@@ -49,7 +49,7 @@ detail.
   is DELETION, never elaboration. Tag `[SHOULD]` at most — usually `[NIT]`. Do not flag
   genuine contracts (field sets, route shapes, persistence decisions, semantics).
 - **Missing green-light AC** — the last acceptance criterion must require the
-  green-light (`npm install && npm run build`) to pass.
+  green-light (AGENTS.md §Green-light) to pass.
 
 ## Concept ledger — open every round with it
 

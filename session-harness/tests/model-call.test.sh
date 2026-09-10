@@ -31,9 +31,10 @@ MODEL_CALL="${1:-$HERE/../scripts/model-call.sh}"
 W="$(mktemp -d)"
 trap 'rm -rf "$W"' EXIT HUP INT TERM
 FAILED=0
+PASSED=0
 
 ok()   { # ok <condition-result> <label>
-  if [ "$1" = 0 ]; then echo "  ok  $2"; else echo "  FAIL  $2" >&2; FAILED=1; fi
+  if [ "$1" = 0 ]; then PASSED=$((PASSED + 1)); echo "  ok  $2"; else echo "  FAIL  $2" >&2; FAILED=1; fi
 }
 alive() { kill -0 "$1" 2>/dev/null; }
 
@@ -258,7 +259,7 @@ else
 fi
 
 if [ "$FAILED" = 0 ]; then
-  echo "model-call.test: OK"
+  echo "model-call.test: OK ($PASSED assertions)"
   exit 0
 fi
 echo "model-call.test: FAILED" >&2

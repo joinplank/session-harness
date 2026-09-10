@@ -25,7 +25,7 @@ Shipped as the `session-harness` **plugin** (`session-harness/`, the canonical s
 
 **Severity convergence** (not zero-findings): **BLOCKING** = correctness · security · data-loss · broken contract/API · regression · unmet-AC → must fix (simplest change that resolves it). **NIT** = style · naming · subjective · optional-refactor · doc → record, never loops. Code review is **diff-adversarial** (sees the diff, not the spec) → AC completeness is the human's, gated by the step-4 AC checklist, not the reviewer.
 
-**Advisory ≠ gate, and it follows from being optional**: a pass that is sometimes skipped is one nothing that merges can depend on. So a DeepSeek pass and a probe take **no round**, their verdict does not block, and their failures say *record it and carry on* where a gating reviewer's say *escalate, do not merge* — `run-review.sh` decides that once, up front, and every message downstream reads from it. Findings are dispositioned like the concept pass's (applied, or declined with a one-line rationale) and posted to the PR.
+**Advisory ≠ gate**: nothing that merges can depend on a pass that is sometimes skipped. A DeepSeek pass and a probe take **no round**, don't block, and fail with *record it and carry on* rather than *escalate* — `run-review.sh` decides that once, up front. Findings are dispositioned like the concept pass's and posted to the PR.
 
 ## Every model call is supervised — `model-call.sh`
 
@@ -38,7 +38,7 @@ Sourced by `plan-critique.sh`, `concept-check.sh`, `run-review.sh`. Two failure 
 | retry | **opt-in**, and the rule is the sandbox flag, not the prompt: `codex exec … -s read-only` earns one (classifier, Codex probe); `codex exec review --base`, `claude -p --dangerously-skip-permissions`, `opencode run --pure` are bounded and run **once** |
 | cancellation | each attempt leads its own process group — an interrupted supervisor kills the call and its descendants, and removes the partial output |
 
-`session-harness/tests/model-call.test.sh` (30 assertions) + `tests/run-review.test.sh` prove these against stand-in CLIs on every `build.sh`. No model call, seconds to run.
+`session-harness/tests/` proves these against stand-in CLIs on every `build.sh` — no model call, seconds to run.
 
 ## Codex model + reasoning effort per call
 

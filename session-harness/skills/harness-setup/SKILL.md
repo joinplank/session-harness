@@ -108,8 +108,13 @@ before the harness can gate on it, not something to weaken.
 ## 5 · Verify, then hand over
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT:-.}/scripts/session.sh" list     # exits clean, reports no sessions yet
+H="${CLAUDE_PLUGIN_ROOT}"; [ -n "$H" ] || H="$(git rev-parse --show-toplevel)"
+"$H/scripts/session.sh" list     # exits clean, reports no sessions yet
 ```
+
+Use that two-line form, not `${CLAUDE_PLUGIN_ROOT:-…}`: the loader substitutes the bare token
+only, so the `:-` spelling survives into the shell, expands to its default, and points at a
+`scripts/` the target repo does not have.
 
 Then tell the human the one thing they do next — `/isession <one-liner>` — and that the flow
 from there is `discuss → /iharden → /iship`, with them merging the PR at the end.

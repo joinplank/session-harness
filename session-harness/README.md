@@ -86,17 +86,14 @@ finalize the PR. Cap hit still `CHANGES_REQUESTED` → escalate, don't merge.
 altitude, before any code), and a realized-code audit in `/iship` after review round 1
 (implementation altitude). The second is advisory and never loops.
 
-**Two advisory extras that gate nothing.** An optional **DeepSeek third opinion**
+**Two advisory extras that gate nothing.** A **DeepSeek third opinion**
 (`--reviewer deepseek`, through `opencode`) for where the gating reviewer and the author share a
-blind spot, and a **directed probe** (`--ask "<question>"`) for when a round needs one specific
-answer rather than a sweep. Both take no round and neither blocks a merge — which follows from
-being optional: a pass that is sometimes skipped is one nothing that merges can depend on.
+blind spot, and a **directed probe** (`--ask "<question>"`) for one specific answer rather than a
+sweep. Neither takes a round or blocks a merge.
 
-**Every model call is supervised.** `model-call.sh` bounds each call, isolates each attempt's
-output so a dead attempt's bytes can never splice into a retry's, and retries only where a
-mechanical read-only sandbox flag makes a second run cost no more than the first. An unsupervised
-call has two failure modes that both end as a round which silently did not happen: it hangs
-forever, or it dies mid-stream having produced nothing.
+**Every model call is supervised.** `model-call.sh` bounds each call, publishes only a successful
+attempt's output, and retries only behind a mechanical read-only sandbox flag. Unsupervised, a
+call that hangs or dies mid-stream both end as a round that silently did not happen.
 
 Full contract: [`skills/adversarial-review/SKILL.md`](skills/adversarial-review/SKILL.md).
 

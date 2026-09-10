@@ -10,7 +10,7 @@ lives in `harness.md`.
 
 ## What this repo is
 
-Two things, and the relationship between them is the thing to hold onto:
+Two things:
 
 1. **The `session-harness` plugin** (`session-harness/`) — an installable Claude Code plugin
    for the `/isession` → `/iharden` → `/iship` flow: attended AI coding sessions in isolated
@@ -208,26 +208,18 @@ the author fixed. So `run-review.sh` refuses an `--out` that already holds a rou
 overwriting it. Answer a refusal with a fresh path, never by deleting the file in the way.
 
 **An optional DeepSeek third opinion** (`run-review.sh --reviewer deepseek`, through `opencode`)
-is available when an engineer wants a fresh model over the same diff — useful where the gating
-reviewer and the author share a blind spot. It is **advisory, never a gate**, which follows from
-being optional: a pass that is sometimes skipped is one nothing that merges can depend on. It
-runs on request only, takes no round, and does not gate the merge; its findings are dispositioned
-like the concept pass's — applied, or declined with a one-line rationale — and recorded on the PR.
-Convergence stays with the gating reviewer alone. Because the diff is inlined into a window much
-shorter than the gating reviewers', a branch over `DEEPSEEK_MAX_DIFF` is **refused rather than
-truncated**: a clipped diff would read as a complete review over code the model never saw, and
-nobody re-checks an advisory verdict.
+gives a fresh model over the same diff, for where the gating reviewer and the author share a blind
+spot. It is **advisory, never a gate**: on request only, no round, no merge gate. Disposition its
+findings like the concept pass's and record them on the PR. A branch over `DEEPSEEK_MAX_DIFF` is
+**refused rather than truncated** — a clipped diff reads as a complete review over code the model
+never saw.
 
-**Every unattended model call in the flow is supervised** — `scripts/model-call.sh`, sourced by
-`plan-critique.sh`, `concept-check.sh` and `run-review.sh`. An unsupervised call has two failure
-modes that both end as a round which silently did not happen: it hangs forever, or it dies
-mid-stream having produced nothing. `model_call` bounds every call (`MODEL_CALL_TIMEOUT_S`,
-default 1800 s), discards a failed attempt's output rather than publishing it — so a partial
-answer can never splice into a retry's and produce a plausible, corrupted review — and retries
-only where a **mechanical read-only sandbox flag** makes a second run cost no more than the
-first. A review-shaped prompt is not a write boundary.
-`session-harness/tests/model-call.test.sh` proves those properties against stand-in CLIs on
-every build.
+**Every unattended model call is supervised** — `scripts/model-call.sh`, sourced by
+`plan-critique.sh`, `concept-check.sh` and `run-review.sh`. Unsupervised, a call that hangs or dies
+mid-stream both end as a round that silently did not happen. `model_call` bounds every call
+(`MODEL_CALL_TIMEOUT_S`, default 1800 s), publishes only a successful attempt's output, and retries
+only behind a **mechanical read-only sandbox flag** — a review-shaped prompt is not a write
+boundary. `session-harness/tests/` proves this against stand-in CLIs on every build.
 
 ## Concept-minimalism pass (in `/iship`, once)
 

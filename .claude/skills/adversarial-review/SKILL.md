@@ -46,7 +46,7 @@ reviewer's endless nits would never let a clean round happen.
 | `DEEPSEEK_MAX_DIFF` | `200000` | env for `run-review.sh` — bytes of diff the DeepSeek pass will accept before refusing |
 | `OPENCODE_BIN` | *(resolved)* | env for `run-review.sh` — the opencode binary; falls back to `~/.opencode/bin/opencode` |
 | `MODEL_CALL_TIMEOUT_S` | `1800` | env for `model-call.sh` — the per-call bound; 30 min is an order of magnitude above the longest real call, so only a stopped one reaches it |
-| `CHECK_CMD` | `npm install && npm run build` | caller convention — the green-light, re-run every round after a fix |
+| `CHECK_CMD` | *(the repo's)* | caller convention — the green-light named in the repo's `AGENTS.md` §Green-light, re-run every round after a fix |
 | `REVIEW_MAX_ROUNDS` | `3` | caller convention — bounds the loop; cap-hit-still-CHANGES_REQUESTED = escalate |
 
 The pairing is fixed: **whoever authored does not review.** Claude implements →

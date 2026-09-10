@@ -12,20 +12,14 @@
 # on the reviewer: only correctness/security/data-loss/broken-contract/
 # regression/unmet-AC are BLOCKING; the rest are NITs.
 #
-# `deepseek` is an ADVISORY third opinion, never a gate: it runs only when an engineer asks
-# for one, so nothing that merges can depend on it having run. Its verdict is read the way the
-# concept pass is — findings dispositioned (applied, or declined with a one-line rationale),
-# recorded on the PR — and the convergence loop still turns on the GATING reviewer alone. A
-# reviewer that is sometimes skipped cannot be a gate, which is why its failures say "record it
-# and carry on" where the gating reviewers say "escalate, do not merge".
-#
-# A DIRECTED PROBE (`--ask`) is the other thing this script does: one aimed question about the
-# same diff, for when a round has to ask the reviewer something specific rather than sweep. It
-# follows the SELECTED reviewer and refuses none of them — a question needs a custom prompt, so
-# every backend is a single call, without the two-call `review --base` dance a Codex round needs.
-# Like DeepSeek it is ADVISORY: asked on request, so it gates nothing, and it consumes no review
-# round. A probe whose attempts are exhausted leaves its question on disk beside the output path,
-# to be recorded on the PR as UNANSWERED — the call was made, so "unasked" would be a lie.
+# Two ADVISORY modes gate nothing — nothing that merges can depend on a pass that is sometimes
+# skipped — so their failures say "record it and carry on" where a gating reviewer's say
+# "escalate, do not merge":
+#   --reviewer deepseek   a third opinion over the same diff, single-call like the claude path
+#   --ask <question>      one aimed question instead of a sweep, on the selected reviewer. The
+#                         question is written to disk BEFORE the call, so a probe that dies is
+#                         recorded on the PR as UNANSWERED rather than lost.
+# Neither takes a round. Findings from either are dispositioned like the concept pass's.
 #
 # Usage:
 #   run-review.sh [--reviewer claude|codex|deepseek] [--base <ref>] [--out <file>] [--round <N>]
@@ -68,7 +62,7 @@ while [ $# -gt 0 ]; do
     --out)      OUT="$2"; shift 2;;
     --round)    ROUND="$2"; shift 2;;
     --ask)      ASK="${2:?--ask requires a question}"; shift 2;;
-    -h|--help)  grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0;;
+    -h|--help)  awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0;;
     *) echo "unknown arg: $1" >&2; exit 2;;
   esac
 done
@@ -158,10 +152,9 @@ if [ -n "$ASK" ] || [ "$REVIEWER" != codex ]; then
   [ -n "$DIFF" ] || { echo "the diff for $DIFF_RANGE came back empty — $FAIL_NOTE" >&2; exit 1; }
 fi
 
-# An output path that already holds something is refused, never overwritten: a round's two files
-# are its only copy until the caller posts them (see SKILL.md), so a reused path destroys an
-# unposted round. The test is content, not existence — a reviewer that dies leaves the empty stub
-# its output redirection created, and that stub must not lock the round out of being re-run.
+# An output path that already holds something is refused, never overwritten: until the caller
+# posts them, a round's two files are its only copy. The test is content, not existence — a dead
+# reviewer leaves an empty stub, which must not lock the round out of being re-run.
 for occupied in "$OUT" "$FULL" "$QUESTION"; do
   if [ -s "$occupied" ]; then
     echo "output path already holds a round: $occupied — give this round its own path" >&2

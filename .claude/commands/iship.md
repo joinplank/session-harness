@@ -126,17 +126,19 @@ later, on the reviewed code, and only flags — it doesn't edit).
 
 ## 2. Green-light, then open a DRAFT PR
 
-Run the green-light and fix until it passes. **Capture it to a log** — install/build output is
-hundreds of lines and you re-run this every review round; your context should absorb one word
-on success and only the error tail on failure:
+The green-light belongs to the repo, not to this harness: **`AGENTS.md` §Green-light** names it.
+Read it there and run it — never assume a stack. If AGENTS.md names none, stop and ask; a build
+command you guessed proves nothing when it passes.
+
+**Capture it to a log** — build output is hundreds of lines and you re-run this every review
+round; your context should absorb one word on success and the error tail on failure:
 
 ```bash
-(npm install && npm run build) > "$W/green.log" 2>&1 && echo GREEN || tail -60 "$W/green.log"
+(<the green-light from AGENTS.md>) > "$W/green.log" 2>&1 && echo GREEN || tail -60 "$W/green.log"
 ```
 
-(The clone is fresh, so the **first** `npm install` populates `node_modules` from scratch — the
-first build is slow; that's expected.) Then push and open a **draft** PR immediately (so
-escalation always has a PR to mark):
+A fresh clone pays a cold dependency install on the first run. Then push and open a **draft** PR
+immediately, so escalation always has a PR to mark:
 
 ```bash
 git push -u origin HEAD
@@ -318,39 +320,31 @@ Then surface the terminal token (the evaluator only sees the transcript) and pau
 
 ### 3d. Advisory passes — only when asked for, never a gate
 
-Two calls sit outside the loop. Both are **advisory**: they take no round, their verdict does not
-block, and a failure to run one is not an escalation. Never run either unprompted.
+Two calls sit outside the loop. Both are **advisory** — no round, no merge block, and failing to
+run one is not an escalation. Never run either unprompted.
 
-**A DeepSeek third opinion** — a fresh model over the same diff, worth asking for where the gating
-reviewer and you (the author) might share a blind spot:
+**A DeepSeek third opinion**, for where the gating reviewer and you (the author) might share a
+blind spot:
 
 ```bash
 "$R" --reviewer deepseek --out "$W/deepseek-1.md"
 ```
 
-DeepSeek speaks through `opencode` (which holds the credential) on the same single-call contract as
-the Claude reviewer: the diff inlined, the model closing with its own `VERDICT:` line. Because the
-diff is inlined into a window much shorter than the gating reviewers', a branch over
-`DEEPSEEK_MAX_DIFF` (200 000 B) is **refused rather than truncated** — a clipped diff would read as
-a complete review over code the model never saw, and nobody re-checks an advisory verdict.
+It runs through `opencode` on the same single-call contract as the Claude reviewer. A branch over
+`DEEPSEEK_MAX_DIFF` (200 000 B) is refused rather than truncated. Disposition its findings under
+the converge-toward-SIMPLE rule and post it as its own PR comment, folded in a `<details>` like a
+review round. (Same path rule: a second one gets `deepseek-2.md`.)
 
-Disposition its findings under the same converge-toward-SIMPLE rule as the concept pass — applied,
-or declined with a one-line rationale — and post it as **its own PR comment**, ledger folded in a
-`<details>` like a review round. Convergence stays the gating reviewer's alone. (Same path rule as
-a round: a second third opinion in this session gets `deepseek-2.md`.)
-
-**A directed probe** — when a round needs the reviewer to answer something *specific* rather than
-sweep the diff (does this invariant hold at every call site? is a claim in the PR body actually
-true?), ask it directly instead of running another round:
+**A directed probe**, when a round needs one specific answer — does this invariant hold at every
+call site? is a claim in the PR body true? — rather than another sweep:
 
 ```bash
 "$R" --reviewer codex --ask "<the question>" --out "$W/probe-1.md"
 ```
 
-The answer lands at `--out` and **the question is written to `$W/probe-1.question.md` before the
-call is made**, so a probe that dies leaves it recoverable. A probe emits no `VERDICT:` line by
-design. If it produces no answer, record it on the PR as **UNANSWERED** with its question — the
-call was made, so reporting it as unasked would be false.
+The answer lands at `--out`, the question at `$W/probe-1.question.md` before the call is made. A
+probe emits no `VERDICT:` line. If it returns nothing, record it on the PR as **UNANSWERED** with
+its question — the call was made, so "unasked" would be false.
 
 ## 4. Finalize: PR write-up + review provenance, then flip to ready
 

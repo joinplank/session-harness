@@ -44,7 +44,7 @@ while [ $# -gt 0 ]; do
     --plan-file) PLAN_FILE="${2:?--plan-file requires a path}"; shift 2;;
     --base)      BASE="${2:?--base requires a ref}"; shift 2;;
     --out)       OUT="${2:?--out requires a path}"; shift 2;;
-    -h|--help)   grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0;;
+    -h|--help)   awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0;;
     *) echo "unknown arg: $1" >&2; exit 2;;
   esac
 done

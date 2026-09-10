@@ -7,15 +7,12 @@
 #   2. session-harness.plugin (a zip) — the whole bundle: manifest, commands, skills,
 #      scripts. ONE-file install via the plugin manager.
 #
-# CANONICAL SOURCE: this bundle. The repo root's own harness — scripts/, .claude/commands/,
-# .claude/skills/ — is a SYNCED COPY, written by the sync step below. That direction is the
-# point: the repo dogfoods the thing it ships, so the vendored layout is exercised on every
-# build rather than drifting until someone tries it. Never hand-edit the repo-root copy; edit
-# the bundle and rebuild.
+# CANONICAL SOURCE: this bundle. The repo root's scripts/, .claude/commands/ and .claude/skills/
+# are a SYNCED COPY written by the sync step below, so the repo dogfoods what it ships and the
+# vendored layout is exercised on every build. Never hand-edit the copy; edit the bundle.
 #
-# Validates and TESTS everything before writing anything. Aborts on any failure, leaving both
-# dist/ and the repo-root copy untouched — a build that half-passed must not ship, and must
-# not become the harness this repo then runs on itself.
+# Validates and TESTS before writing anything. Any failure aborts with dist/ and the repo-root
+# copy untouched — a half-passing build must not ship, nor become the harness this repo runs on.
 #
 # Run from anywhere; cd's relative to its own location.
 
@@ -266,9 +263,8 @@ if [ "$validation_failed" -ne 0 ]; then
 fi
 
 # -----------------------------------------------------------------------------
-# Sync the validated bundle into the repo's own harness. This is what makes the repo
-# dogfood what it ships — and it is the only exercise the VENDORED layout gets, so it runs
-# on every build rather than being something a maintainer remembers.
+# Sync the validated bundle into the repo's own harness — the only exercise the VENDORED layout
+# gets, so it runs on every build rather than when a maintainer remembers.
 # -----------------------------------------------------------------------------
 echo "Syncing bundle → the repo's own harness..."
 mkdir -p "$REPO_ROOT/scripts" "$REPO_ROOT/.claude/commands" "$REPO_ROOT/.claude/skills"
@@ -277,9 +273,8 @@ rsync -a --delete --exclude '.DS_Store' "$HERE/commands/" "$REPO_ROOT/.claude/co
 rsync -a --delete --exclude '.DS_Store' "$HERE/skills/adversarial-review/" "$REPO_ROOT/.claude/skills/adversarial-review/"
 echo "  ✓ scripts/, .claude/commands/, .claude/skills/adversarial-review/ synced"
 
-# The vendored copy has to actually work from where it now sits: run-review.sh resolves
-# model-call.sh by walking up from its own location, and the two layouts sit at different
-# depths. Proving it here is what keeps that resolution from silently regressing.
+# run-review.sh resolves model-call.sh by walking up from its own location, and the two layouts
+# sit at different depths — so prove the copy works from where it now sits.
 echo "Proving the vendored layout resolves its helper..."
 # Sourcing happens before argument checking, so reaching an argument error at all is the proof.
 # Asserting the positive AND the negative: a future refactor that reordered the two would let a

@@ -85,8 +85,8 @@ provision_slot() {
 }
 
 # Seed local secrets into a freshly-provisioned clone. .env is gitignored, so it's never in
-# the clone via git and is wiped by provision_slot's `clean -ffdx` — but the green-light build
-# (`npm run build`) and runtime need it. Copy it from the source repo (REPO_DIR). It stays
+# the clone via git and is wiped by provision_slot's `clean -ffdx` — but the green-light and
+# runtime need it. Copy it from the source repo (REPO_DIR). It stays
 # gitignored IN the clone (the tracked .gitignore ignores .env there too), so it can never be
 # committed or pushed. Re-run on every provision so reused slots always get the current secrets.
 seed_env() {

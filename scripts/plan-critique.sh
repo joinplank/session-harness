@@ -6,7 +6,7 @@
 #   plan-critique.sh (--issue <N> | --body-file <f>) [--thread <file>] [--out <file>] [--comment]
 #
 # Reads the CURRENT plan (issue body via gh, or a local file), invokes the critic
-# (the complementary tool — Codex by default) ONCE using scripts/plan-reviewer.md,
+# (the complementary tool — Codex by default) ONCE using the plan-reviewer.md beside it,
 # and emits tagged [BLOCKER]/[SHOULD]/[NIT] findings followed by EXACTLY ONE
 # `VERDICT: APPROVED|CHANGES_REQUESTED` line (the final line).
 #
