@@ -1,0 +1,15 @@
+{
+  "name": "session-harness",
+  "owner": {
+    "name": "joinplank",
+    "url": "https://github.com/joinplank"
+  },
+  "description": "The interactive coding harness for Claude — one task = one isolated clone + one attended session, plans and code hardened adversarially by the complementary tool, and a human merging every PR.",
+  "plugins": [
+    {
+      "name": "session-harness",
+      "source": "./session-harness",
+      "description": "Run each task in its own isolated clone under an attended Claude session: /isession bootstraps, /iharden hardens the plan against an independent Codex critic, /iship implements and loops an adversarial code review to convergence, /reap recycles merged sessions into warm clones."
+    }
+  ]
+}

@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "plank-harness",
+  title: "session-harness",
   description:
-    "Hello-world Next.js app wired up with the Plank interactive coding harness",
+    "Hello-world Next.js app wired up with the interactive session harness",
 };
 
 export default function RootLayout({

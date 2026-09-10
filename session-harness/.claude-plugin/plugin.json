@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "session-harness",
+  "displayName": "Session Harness",
+  "version": "0.1.0",
+  "description": "The interactive coding harness: one task = one isolated clone + one attended Claude session, plans and code hardened adversarially by the COMPLEMENTARY tool (Claude authors → Codex critiques), and a human merging every PR. Ships four slash commands — /isession (provision an isolated clone and open a session rooted in it), /iharden (file the plan as an issue and loop it against an independent Codex critic to convergence), /iship (implement under a completion bar: simplify pass → green-light → draft PR → adversarial review loop → AC checklist → ready for a human to merge), /reap (recycle merged sessions into warm idle clones) — plus two skills: adversarial-review, the review turn harness that converges by SEVERITY rather than zero-findings and offers an advisory DeepSeek third opinion and a directed --ask probe, and harness-setup, which wires the flow into a repo you already have. Every unattended model call runs under a supervisor that bounds it, isolates each attempt's output, and retries only where a read-only sandbox makes a second run free.",
+  "author": {
+    "name": "joinplank",
+    "url": "https://github.com/joinplank"
+  },
+  "homepage": "https://github.com/joinplank/session-harness/tree/main/session-harness",
+  "repository": "https://github.com/joinplank/session-harness",
+  "license": "MIT",
+  "keywords": [
+    "adversarial-review",
+    "agents",
+    "claude-code",
+    "codex",
+    "code-review",
+    "deepseek",
+    "harness",
+    "interactive",
+    "isolated-clone",
+    "pull-request"
+  ],
+  "skills": [
+    "./skills/adversarial-review",
+    "./skills/harness-setup"
+  ]
+}

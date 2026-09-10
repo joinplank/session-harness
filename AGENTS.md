@@ -1,25 +1,35 @@
-# AGENTS.md — plank-harness
+# AGENTS.md — session-harness
 
 Conventions for AI coding agents working in this repo. This repo is set up for
 **both Claude Code and OpenAI Codex** — we use them together (the session
 implements, Codex does adversarial review). Codex reads this file automatically;
 Claude reads it via `CLAUDE.md` (`@AGENTS.md`).
 
-This is the single shared source of repo rules. Claude command wrappers live in
-`.claude/`; the canonical behavior lives in `scripts/` and the critic prompt in
-`scripts/plan-reviewer.md`.
+This is the single shared source of repo rules. A one-page summary of the whole machine
+lives in `harness.md`.
 
 ## What this repo is
 
-A **hello-world Next.js app** wired up with an **interactive coding harness** —
-the `/isession` → `/iharden` → `/iship` flow for running attended AI coding
-sessions in isolated clones, with plans and code hardened adversarially by the
-complementary tool. The app is deliberately minimal: it's the substrate the
-harness operates on; the harness is the point. This repo is meant as a **base**:
-keep the harness, replace the hello-world app with your product, and rewrite
-this section (plus a product/architecture doc once you have one — name it here
-so the plan critic knows to consult it). A one-page summary of the whole
-machine lives in `harness.md`.
+Two things, and the relationship between them is the thing to hold onto:
+
+1. **The `session-harness` plugin** (`session-harness/`) — an installable Claude Code plugin
+   for the `/isession` → `/iharden` → `/iship` flow: attended AI coding sessions in isolated
+   clones, with plans and code hardened adversarially by the complementary tool. The repo root
+   is a plugin **marketplace** (`.claude-plugin/marketplace.json`) listing it.
+2. **A hello-world Next.js app** (`src/`) — deliberately minimal. It is the substrate the
+   harness operates on, and it is what makes the green-light real.
+
+**The bundle is the canonical source; the repo root's own harness is a synced copy.** `scripts/`,
+`.claude/commands/` and `.claude/skills/` are written by `session-harness/build.sh` from the
+bundle. Never hand-edit them — edit `session-harness/` and rebuild, or the next build silently
+reverts your change. The sync direction is deliberate: this repo dogfoods the plugin it ships, so
+the vendored layout is exercised on every build instead of drifting until someone tries it.
+
+Using this repo as a **base for a product**: keep the harness, replace the hello-world app with
+your product, rewrite this section and §The stack, and name your product/architecture doc here
+once you have one so the plan critic knows to consult it. Revisit the pre-production stance when
+you ship. To adopt the harness in a repo you already have, install the plugin and run its
+`harness-setup` skill instead of copying anything by hand.
 
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
@@ -121,6 +131,11 @@ Every change must pass the green-light before review + merge:
 `npm run build` is `next build`, which type-checks, so a green run is the bar. Do
 not weaken types, delete tests, or stub things to force it green.
 
+**A change to the plugin bundle also has to build the bundle** — `session-harness/build.sh`,
+which validates the manifests, runs both offline test suites, and re-syncs the repo's own
+harness from the bundle. A bundle change that skips it leaves this repo running a harness that
+no longer matches what it ships.
+
 Every provisioned session clone is seeded with the source repo's local `.env`
 (`scripts/lib.sh` `seed_env`) when one exists, since a build/runtime may need it and
 `.env` is gitignored (never cloned via git). It stays gitignored in the clone, so
@@ -182,7 +197,37 @@ The review harness is the **`adversarial-review`** skill
 current branch diff, looped by the caller. `codex exec review --base` can't take a
 custom prompt, so a round is two Codex calls — the review, then a classifier that
 turns its prose into the structured verdict (keeping the severity call on the
-reviewer's side).
+reviewer's side). When a round needs to ask the reviewer one *specific* question instead of
+sweeping, `run-review.sh --ask` is the **directed probe**: advisory like the DeepSeek pass
+below — it gates nothing and takes no round — and its question is written to disk before the
+call, so a probe that fails is recorded on the PR as **unanswered** rather than vanishing.
+
+**Give every round its own `--out`.** Between a round finishing and its comment going up, those
+two files are the round's only copy — the comment can't be posted sooner, because it says what
+the author fixed. So `run-review.sh` refuses an `--out` that already holds a round rather than
+overwriting it. Answer a refusal with a fresh path, never by deleting the file in the way.
+
+**An optional DeepSeek third opinion** (`run-review.sh --reviewer deepseek`, through `opencode`)
+is available when an engineer wants a fresh model over the same diff — useful where the gating
+reviewer and the author share a blind spot. It is **advisory, never a gate**, which follows from
+being optional: a pass that is sometimes skipped is one nothing that merges can depend on. It
+runs on request only, takes no round, and does not gate the merge; its findings are dispositioned
+like the concept pass's — applied, or declined with a one-line rationale — and recorded on the PR.
+Convergence stays with the gating reviewer alone. Because the diff is inlined into a window much
+shorter than the gating reviewers', a branch over `DEEPSEEK_MAX_DIFF` is **refused rather than
+truncated**: a clipped diff would read as a complete review over code the model never saw, and
+nobody re-checks an advisory verdict.
+
+**Every unattended model call in the flow is supervised** — `scripts/model-call.sh`, sourced by
+`plan-critique.sh`, `concept-check.sh` and `run-review.sh`. An unsupervised call has two failure
+modes that both end as a round which silently did not happen: it hangs forever, or it dies
+mid-stream having produced nothing. `model_call` bounds every call (`MODEL_CALL_TIMEOUT_S`,
+default 1800 s), discards a failed attempt's output rather than publishing it — so a partial
+answer can never splice into a retry's and produce a plausible, corrupted review — and retries
+only where a **mechanical read-only sandbox flag** makes a second run cost no more than the
+first. A review-shaped prompt is not a write boundary.
+`session-harness/tests/model-call.test.sh` proves those properties against stand-in CLIs on
+every build.
 
 ## Concept-minimalism pass (in `/iship`, once)
 
@@ -224,5 +269,7 @@ review vs. after round 1), different teeth (edits vs. advisory).
 - One issue → one branch (`task/<issue#>-<slug>`) → one PR → the human merges.
 - Stay in your clone; never `git push --force` (only `--force-with-lease`).
 - Don't hand-edit `package-lock.json` — regenerate via `npm install`.
+- Don't hand-edit `scripts/`, `.claude/commands/` or `.claude/skills/` — they are synced from
+  `session-harness/` by its `build.sh`, which overwrites them.
 - Escalate (don't merge) on: an un-greenable build, an unresolvable real finding,
   an unclean merge, or genuine ambiguity. Leave the issue OPEN when escalating.
