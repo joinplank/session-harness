@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Key dark styling to the `dark` class on <html> — the single runtime source
+   of truth for the current theme — instead of the OS media query. The
+   pre-hydration script in the root layout sets the class (stored choice,
+   else OS preference, live-followed while no choice is stored). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,11 +18,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
